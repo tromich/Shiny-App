@@ -66,20 +66,21 @@ ui <- fluidPage(
                         ),
                tabPanel("3. Analyze Extracted data",
                         fluidPage(
-                          textInput("filepath",label=h3("File Directory Path")),
-                          hr(),
+                          fluidRow(
+                                  
+                            column(4,textInput("filepath",label=h3("File Directory Path")),),
+                            column(4,selectInput("calccommand", label = h3("Choose Analysis Type"), choices = list("Annual Average NDVI" = 1, "NDVI Difference Summer-Winter" = 2), selected = 1)),
+                            #button to execute calculations
+                            column(3,offset=1,actionButton("calculate",label=h3("Calculate")))
+                            ),
+                          
+                          
                           
                           ###TEST
                           #fluidRow(column(4,textOutput("test"))),
-                          #hr(),
-                          
-                          selectInput("calccommand", label = h3("Choose Analysis Type"), choices = list("Annual Average NDVI" = 1, "NDVI Difference Summer-Winter" = 2), selected = 1),
                           hr(),
-                          #button to execute calculations
-                          actionButton("calculate",label=h3("Calculate")),
-                          hr(),
-                          fluidRow(column(2,verbatimTextOutput("calculate"))),
                           
+                          #actual outputs
                           h3("View your results here once calculation is finished:"),
                           tableOutput("tableoutput"),
                           tableOutput('erroryears'),
@@ -373,7 +374,7 @@ server <- function(input, output) {
     
     #create the rasterstack to hold the NDVI for each timestamp
     NDVIs2 = stack()
-    
+    dates = data.frame(matrix(nrow=1,ncol=1))
     ###loop for all files in the namelist
     for (i in 1:length(filenames)){
       #in the target directory:
@@ -394,6 +395,10 @@ server <- function(input, output) {
         
         #load the file with "B3" as characters 45 and 46
         band3 = raster(list.files(pattern=glob2rx("*B3.TIF$"),full.names=TRUE))
+        
+        #get the date info from the name - the first date is when it was actually measured
+        measdate = substr(list.files(pattern=glob2rx("*B3.TIF$"),full.names=TRUE),20,27)
+        dates[i]=measdate
         
         #load the file with "B4" as characters 45 and 46
         band4 = raster(list.files(pattern=glob2rx("*B4.TIF$"),full.names=TRUE))
@@ -422,7 +427,8 @@ server <- function(input, output) {
       #return to target directory
       setwd(target_directory)
     }
-    
+    #name the layers appropriately:
+    names(NDVIs2) = dates
     #export the results so that they can be loaded more quickly
     writeRaster(NDVIs2,fn(),format='raster',bylayer=FALSE) #this works, more or less - there is error between the result when imported and the pre-export object, but it's on the order of 10^-8, so should be acceptable (and probably unavoidable)
     ###

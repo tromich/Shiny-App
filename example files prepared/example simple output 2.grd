@@ -1,10 +1,10 @@
 [general]
 creator=R package 'raster'
-created=2022-03-10 14:37:11
+created=2022-03-10 14:54:26
 [georeference]
 nrows=994
-ncols=957
-xmin=721365
+ncols=624
+xmin=731355
 ymin=4355685
 xmax=750075
 ymax=4385505
@@ -15,12 +15,12 @@ byteorder=little
 nbands=1
 bandorder=BIL
 categorical=FALSE
-minvalue=-0.473441627789332
-maxvalue=0.500957656834723
+minvalue=-0.437360178970917
+maxvalue=0.470477119005545
 nodatavalue=-3.4e+38
 [legend]
 legendtype=
 values=
 color=
 [description]
-layername=layer
+layername=X20170530
