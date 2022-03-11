@@ -13,21 +13,51 @@ ui <- fluidPage(
     navbarPage("Remote Sensing Data Analyzer",
                tabPanel("1. Description",
                         fluidPage(
-                          h1("LANDSAT Remote Sensing Data NDVI Analyzer",align="center"),
-                          h3("Trevor Romich",align="center"),
+                          tags$head(
+                            tags$style(
+                                HTML("
+                                  .diva{
+                                    background-color: #3E3F3A;
+                                    outline: #3E3F3A solid 20px;
+                                    color: #FFFFFF;
+                                  }
+                                  h1.a{
+                                    color: #FFFFFF;
+                                    text-decoration-line: underline;
+                                  }
+                                  h3.a{
+                                    color: #FFFFFF;
+                                  }
+                                  p.a{
+                                    color: #FFFFFF;
+                                  }
+                                     ")
+                                )
+                            
+                          ),
                           br(),
-                          p("This program is designed to: (1) extract LANDSAT 7 and 8 surface reflectance data files, converting them into a 
+                          br(),
+                          br(),
+                          br(),
+                          br(),
+                          br(),
+                          div(class="diva",
+                          h1(class="a","LANDSAT Remote Sensing Data NDVI Analyzer",align="center"),
+                          h3(class="a","Trevor Romich",align="center"),
+                          p(class="a","This program is designed to: (1) extract LANDSAT 7 and 8 surface reflectance data files, converting them into a 
                             smaller filesize that it can easily work with, and (2) perform NDVI-related analysis on compacted files that it
                             produces. Specifically it is capable of calculating average NDVI for each year in the provided data, as well as
                             the difference between summer and winter NDVI for each year with both summer and winter data. Several output figures
                             are provided to help the user interpret the results of the analysis.",align="center")
-                          
+                          )
                         )
                  
                ),
                tabPanel("2. Instructions",
                         fluidPage(
+                          
                           titlePanel("Instructions for use"),
+                          hr(),
                           h3("Step 1. Download your data and put it in a single folder"),
                           fluidRow(p("Data MUST BE LANDSAT 7 or 8 data downloaded from EarthExplorer with unaltered filenames. 
                                      The data should be in .tar files, and should be the only contents of the folder.
@@ -74,15 +104,15 @@ ui <- fluidPage(
                           hr(),
 
                           #coordinates
-                          helpText("Enter the latitude and longitude range of interest below:"),
+                          h3("Enter the latitude and longitude range of interest below:"),
                           fluidRow(column(4,
-                          numericInput("xmin",label=h3("Minimum longitude coordinate"),value = 731366),
+                          numericInput("xmin",label=h5("Minimum longitude coordinate"),value = 731366),
                           
-                          numericInput("xmax",label=h3("Maximum longitude coordinate"),value = 750085)
+                          numericInput("xmax",label=h5("Maximum longitude coordinate"),value = 750085)
                           ),column(4,
-                          numericInput("ymin",label=h3("Minimum latitude coordinate"),value = 4355675),
+                          numericInput("ymin",label=h5("Minimum latitude coordinate"),value = 4355675),
                           
-                          numericInput("ymax",label=h3("Maximum latitude coordinate"),value = 4375513)
+                          numericInput("ymax",label=h5("Maximum latitude coordinate"),value = 4375513)
                           )),
                           hr(),
                           #button to execute extraction
@@ -104,7 +134,7 @@ ui <- fluidPage(
                             ),
                           helpText("The path to the target file must be the FULL path WITH the file extension, ex. C:/documents/file.gri"),
                           helpText("Annual Average NDVI: For all years in the dataset, gets the average of all NDVI values in the year for each point."),
-                          helpText("NDVI Difference Summer - Winter: For all years in the dataset, gets the average of all Jun/Jul/Aug values at each location and subtracts from them the average of all Dec/Jan/Feb values at the same location."),
+                          helpText("NDVI Difference Summer - Winter: For all years in the dataset, gets the average of all Jun/Jul/Aug values at each location and subtracts from them the average of all Jan/Feb/Mar values at the same location."),
                           hr(),
                           
                           #actual outputs
@@ -121,7 +151,12 @@ ui <- fluidPage(
                           plotOutput("rasteroutput"),
                           
                           hr(),
-                          plotOutput("graphoutput")
+                          h4(textOutput("graphoutputdesc")),
+                          plotOutput("graphoutput"),
+
+                          br(),
+                          br()
+                          
                         )
                ),
              
@@ -181,7 +216,7 @@ server <- function(input, output) {
         )
       })
       output$rasteroutputtitle = renderText({
-        str_c("Plot of ",mapstuff$analysistype," (indicated by color) for the year ",mapstuff$rasteryears[mapstuff$raster2display],".")
+        str_c("Plot of ",mapstuff$analysistype," (indicated by color) for the year ",mapstuff$rasteryears[mapstuff$raster2display])
       })
     }
     #otherwise we will need to display an error message
@@ -461,12 +496,14 @@ server <- function(input, output) {
     mapstuff$rasters=pNDVI #give it all of them
     #also give it the list of years
     if(calccommand==1){
-      mapstuff$rasteryears = as.vector(yearlist$Year) 
-      mapstuff$analysistype = "annual average NDVI"
+      mapstuff$rasteryears = as.vector(yearlist$Year)
+      atyp="annual average NDVI"
+      mapstuff$analysistype = atyp
     }
     if(calccommand==2){
       mapstuff$rasteryears = as.vector(tNDVI$Year)
-      mapstuff$analysistype = "summer - winter NDVI difference"
+      atyp="summer - winter NDVI difference"
+      mapstuff$analysistype = atyp
     }
     
     
@@ -474,7 +511,12 @@ server <- function(input, output) {
     #this should be a 'simple' ggplot of the calculated value vs year, from tNDVI
     #it might be nice to include error bars of +/- 1 SD, since I have that data
     output$graphoutput = renderPlot({
-      ggplot(data=tNDVI,aes(x=Year,y=`Mean NDVI`))+geom_point()+theme_minimal()+labs(y=plotyaxislabel)
+      ggplot(data=tNDVI,aes(x=Year,y=`Mean NDVI`))+geom_point()+theme_minimal()+
+        theme(axis.title=element_text(size=15),axis.text = element_text(size=12))+
+        labs(y=plotyaxislabel)
+    })
+    output$graphoutputdesc = renderText({
+      str_c("Plot of ",atyp," for each year with provided data")
     })
     
     output$tableoutput = renderTable({summarytbl})
