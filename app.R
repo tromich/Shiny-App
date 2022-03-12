@@ -45,7 +45,7 @@ ui <- fluidPage(
                           h1(class="a","LANDSAT Remote Sensing Data NDVI Analyzer",align="center"),
                           h3(class="a","Trevor Romich",align="center"),
                           p(class="a","This program is designed to: (1) extract LANDSAT 7 and 8 surface reflectance data files, converting them into a 
-                            smaller filesize that it can easily work with, and (2) perform NDVI-related analysis on compacted files that it
+                            smaller filesize that it can easily work with, and (2) perform NDVI (normalized difference vegetation index) related analysis on compacted files that it
                             produces. Specifically it is capable of calculating average NDVI for each year in the provided data, as well as
                             the difference between summer and winter NDVI for each year with both summer and winter data. Several output figures
                             are provided to help the user interpret the results of the analysis.",align="center")
@@ -132,6 +132,7 @@ ui <- fluidPage(
                             #button to execute calculations
                             column(3,offset=1,actionButton("calculate",label=h3("Calculate")))
                             ),
+                          helpText("Remember: .gri files only!"),
                           helpText("The path to the target file must be the FULL path WITH the file extension, ex. C:/documents/file.gri"),
                           helpText("Annual Average NDVI: For all years in the dataset, gets the average of all NDVI values in the year for each point."),
                           helpText("NDVI Difference Summer - Winter: For all years in the dataset, gets the average of all Jun/Jul/Aug values at each location and subtracts from them the average of all Jan/Feb/Mar values at the same location."),
@@ -484,7 +485,7 @@ server <- function(input, output) {
     
     if((dim(yearlist)[1]!=0) & (valid_year_index !=0)){
     #if not, continue as usual
-    output$successfailure = renderText({c("Analysis Successful!")})  
+    output$successfailure = renderText({c("Analysis Successful! Scroll down to view the rest of your results.")})  
       
     ##were there any years excluded?
     #display the yearlist table, which includes this information
@@ -511,7 +512,7 @@ server <- function(input, output) {
     #this should be a 'simple' ggplot of the calculated value vs year, from tNDVI
     #it might be nice to include error bars of +/- 1 SD, since I have that data
     output$graphoutput = renderPlot({
-      ggplot(data=tNDVI,aes(x=Year,y=`Mean NDVI`))+geom_point()+theme_minimal()+
+      ggplot(data=tNDVI,aes(x=Year,y=`Mean NDVI`))+geom_point(size = 8,shape="x")+theme_minimal()+
         theme(axis.title=element_text(size=15),axis.text = element_text(size=12))+
         labs(y=plotyaxislabel)
     })
